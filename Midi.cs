@@ -31,6 +31,7 @@ namespace MIDIConventor
         public Dictionary<int, List<NoteInfo>> NoteData = new Dictionary<int, List<NoteInfo>>();
         public int MaxNotePosition { get; internal set; }
         public short Layers { get; internal set; }
+        public StringBuilder LogBuilder = new StringBuilder();
         public Midi(string path)
         {
             var mf = new MidiFile(path, false);
@@ -64,7 +65,7 @@ namespace MIDIConventor
                         int note = NoteToInt(name);
                         if (note < MinimumNote || note > MaximumNote)
                         {
-                            Console.WriteLine($"The key {name} is out of range!");
+                            LogBuilder.AppendLine($"The key {name} is out of range!");
                             continue;
                         }
                         var info = IntToInfo(note);

@@ -11,17 +11,19 @@ namespace MIDIConventor
         static void Main(string[] args)
         {
             byte[] adapter = { 1, 3, 0, 4, 2 };
-            /*
-            var mf = new MidiFile("ADAMAS.mid", false);
-            var interMidi = Midi2Intermediate.Convert(mf);
-            string str = JsonConvert.SerializeObject(interMidi.Data);
-            File.WriteAllText("mid.json", str);
-            Console.ReadLine();*/
-            string fname= Console.ReadLine();
-            Midi conv = new Midi(fname);
+            dynamic conv;
+            Console.WriteLine("Please specify the version of convert engine(1 or 2):");
+            string ver = Console.ReadLine();
+            if (ver != "1" && ver != "2")
+                return;
+            Console.WriteLine("Please input midi file name:");
+            string fname = Console.ReadLine();
+            if (ver == "1")
+                conv = new Midi2NBS(fname);
+            else
+                conv = new Midi(fname);
             /*
             Midi2NBS conv = new Midi2NBS(fname);*/
-            Console.WriteLine("Please input midi file name:");
             var fs = File.OpenWrite("midi2nbs.nbs");
             var bw = new BinaryWriter(fs);
             short length = 0;
@@ -52,22 +54,22 @@ namespace MIDIConventor
             bw.Write(0);//right clicks
             bw.Write(0);//blocks added
             bw.Write(0);//blocks removed
-            WriteString(bw, "ADAMAS.mid");
-            
+            WriteString(bw, fname);
+
             short currTick = -1;
             for (short tick = 0; tick < conv.MaxNotePosition; tick++)
             {
                 if (!conv.NoteData.ContainsKey(tick))
                     continue;
                 short deltaTick = (short)(tick - currTick);
-                bw.Write(deltaTick) ;
+                bw.Write(deltaTick);
 
                 for (int i = 0; i < conv.NoteData[tick].Count; i++)
                 {
                     bw.Write((short)1);//jump down
                     byte inst = adapter[(int)conv.NoteData[tick][i].BaseType];
                     bw.Write(inst);
-                    bw.Write((byte)(conv.NoteData[tick][i].Note+33));
+                    bw.Write((byte)(conv.NoteData[tick][i].Note + 33));
                     //bw.Write((byte)BaseType.Piano);
                     //bw.Write((byte)conv.NoteData[tick][i].ActualNote);
                 }
@@ -88,7 +90,7 @@ namespace MIDIConventor
 
             Console.ReadLine();
         }
-        static void WriteString(BinaryWriter bw,string str)
+        static void WriteString(BinaryWriter bw, string str)
         {
             bw.Write(str.Length);
             for (int i = 0; i < str.Length; i++)
